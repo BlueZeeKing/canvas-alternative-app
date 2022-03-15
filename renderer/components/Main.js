@@ -12,7 +12,7 @@ const { Title } = Typography;
 export default function Main(props) {
   return (
     <Layout className="body">
-      <Header>
+      <Header className="drag">
         <Space size={40}>
           <Link href="/home" passHref>
             <span style={{ cursor: "pointer" }}>
@@ -32,7 +32,7 @@ export default function Main(props) {
         </Space>
       </Header>
       <Layout>
-        <Sidebar course={props.course} name={props.title} tabs={props.tabs} />
+        <Sidebar course={props.course} name={props.title} sidebar={props.sidebar} />
         <div
           style={{
             overflow: "scroll",

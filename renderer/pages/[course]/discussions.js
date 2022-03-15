@@ -7,10 +7,14 @@ import { useEffect } from "react";
 import Main from "../../components/Main";
 import Header from "../../components/Header";
 import useSessionStorage from "../../hooks/useSessionStorage";
+import useAPI from "../../hooks/useAPI";
 
 export default function App(props) {
   const router = useRouter();
   const [storage, set, reset] = useSessionStorage();
+  const [data, ready] = useAPI(`/courses/${router.query.course}/discussion_topics`, [
+    ["per_page", 50],
+  ]);
 
   useEffect(() => set("Discussions", `/${router.query.course}/discussions?title=${router.query.title}`, 2), []);
 

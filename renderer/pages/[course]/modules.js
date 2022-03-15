@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { Menu } from "antd";
+import { Menu, Skeleton } from "antd";
 import Link from "next/link";
 import { useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -10,12 +10,18 @@ const { SubMenu } = Menu;
 import Main from "../../components/Main";
 import Header from "../../components/Header";
 import useSessionStorage from "../../hooks/useSessionStorage";
+import useAPI from "../../hooks/useAPI";
 
 export default function App(props) {
   const router = useRouter();
   const [storage, set, reset] = useSessionStorage();
+  const [data, ready] = useAPI(`/courses/${router.query.course}/modules`, [
+    ["per_page", 50],
+    ["include", "items"]
+  ]);
 
   useEffect(() => set("Modules", `/${router.query.course}/modules?title=${router.query.title}`, 2), []);
+
   return (
     <>
       <Header />
@@ -28,8 +34,8 @@ export default function App(props) {
         tabs={props.tabs}
       >
         <div style={{ padding: "10px" }}>
-          <Menu mode="inline">
-            {props.data.map((module) => (
+          {ready ? <Menu mode="inline">
+            {data.map((module) => (
               <SubMenu key={module.id} title={module.name}>
                 {module.items.map((item) => {
                   if (item.type == "SubHeader") {
@@ -128,41 +134,9 @@ export default function App(props) {
                 })}
               </SubMenu>
             ))}
-          </Menu>
+          </Menu> : <Skeleton active />}
         </div>
       </Main>
     </>
   );
-}
-
-export async function getServerSideProps(context) {
-  const [res, tabsRaw] = await Promise.all([
-    fetch(
-      `https://apsva.instructure.com/api/v1/courses/${context.params.course}/modules?include=items&per_page=50`,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.API_KEY}`,
-        },
-      }
-    ),
-    fetch(
-      `https://apsva.instructure.com/api/v1/courses/${context.params.course}/tabs`,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.API_KEY}`,
-        },
-      }
-    ),
-  ]);
-
-  const [data, tabs] = await Promise.all([res.json(), tabsRaw.json()]);
-
-  // Pass data to the page via props
-  return {
-    props: {
-      data: data,
-      limit: res.headers.get("x-rate-limit-remaining"),
-      tabs: tabs,
-    },
-  };
 }

@@ -28,7 +28,7 @@ export default function Home(props) {
         history={storage}
         title="Dashboard"
         breadcrumb
-        tabs={[]}
+        sidebar
       >
         <Space style={{ width: "100%", padding: "10px" }} wrap>
           {ready ? data

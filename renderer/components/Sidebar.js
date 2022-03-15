@@ -1,15 +1,18 @@
-import { Layout, Menu } from "antd";
+import { Layout, Menu, Skeleton } from "antd";
 import Link from "next/link";
 
 const { Sider } = Layout;
 const { SubMenu } = Menu;
 
+import useAPI from "../hooks/useAPI";
+
 export default function Sidebar(props) {
+  const [tabs, ready] = useAPI(`/courses/${props.course}/tabs`, [], !props.sidebar);
   return (
-    <Sider>
+    <Sider style={{height: "100%"}}>
       <Menu mode="inline" style={{ minHeight: "100%" }}>
-        {props.tabs.length > 0
-          ? props.tabs
+        {ready
+          ? tabs
               .filter((item) => item.type == "internal")
               .map((item) => (
                 <Menu.Item key={item.id}>

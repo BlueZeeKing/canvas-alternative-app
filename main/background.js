@@ -41,6 +41,7 @@ app.on('window-all-closed', () => {
 });
 
 ipcMain.on('canvas', async (e, body) => {
+  console.log(body)
   const res = await axios.get(
     body,
     {
