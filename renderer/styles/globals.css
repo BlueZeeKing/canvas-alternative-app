@@ -1,0 +1,25 @@
+.ant-layout-sider-children {
+  margin: 0;
+}
+
+.body  {
+  height: 100vh;
+}
+
+body, #__next {
+  height: 100%;
+}
+
+.page-padding {
+  padding-bottom: 10px;
+}
+
+.scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scroll {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
