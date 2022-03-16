@@ -12,6 +12,12 @@ import useSessionStorage from "../../hooks/useSessionStorage";
 export default function App(props) {
   const router = useRouter();
   const [storage, set, reset] = useSessionStorage();
+  const [data, ready] = useAPI(
+    `/courses/${router.query.course}/assignments`,
+    [["per_page", 80]],
+    () => null
+  );
+
 
   useEffect(() => set("Assignments", `/${router.query.course}/assignments?title=${router.query.title}`, 2), []);
 
@@ -23,13 +29,11 @@ export default function App(props) {
         history={storage}
         title={router.query.title}
         course={router.query.course}
-        rate_limit={props.limit}
-        tabs={props.tabs}
       >
         <div style={{ padding: "10px" }}>
           <Menu mode="inline">
             <Menu.ItemGroup title="Assignments">
-              {props.data.map((assignment) => (
+              {ready ? data.map((assignment) => (
                 <Menu.Item key={assignment.id}>
                   <Link
                     href={`/${router.query.course}/assignment/${assignment.id}?title=${router.query.title}`}
@@ -37,44 +41,11 @@ export default function App(props) {
                     {assignment.name}
                   </Link>
                 </Menu.Item>
-              ))}
+              )) : <Skeleton active />}
             </Menu.ItemGroup>
           </Menu>
         </div>
       </Main>
     </>
   );
-}
-
-export async function getServerSideProps(context) {
-
-  const [res, tabsRaw] = await Promise.all([
-    fetch(
-      `https://apsva.instructure.com/api/v1/courses/${context.params.course}/assignments?per_page=80`,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.API_KEY}`,
-        },
-      }
-    ),
-    fetch(
-      `https://apsva.instructure.com/api/v1/courses/${context.params.course}/tabs`,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.API_KEY}`,
-        },
-      }
-    ),
-  ]);
-
-  const [data, tabs] = await Promise.all([res.json(), tabsRaw.json()]);
-
-  // Pass data to the page via props
-  return {
-    props: {
-      data: data,
-      limit: res.headers.get("x-rate-limit-remaining"),
-      tabs: tabs,
-    },
-  };
 }

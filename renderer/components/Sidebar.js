@@ -7,7 +7,7 @@ const { SubMenu } = Menu;
 import useAPI from "../hooks/useAPI";
 
 export default function Sidebar(props) {
-  const [tabs, ready] = useAPI(`/courses/${props.course}/tabs`, [], !props.sidebar);
+  const [tabs, ready] = useAPI(`/courses/${props.course}/tabs`, [], () => ( null ), !props.sidebar);
   return (
     <Sider style={{height: "100%"}}>
       <Menu mode="inline" style={{ minHeight: "100%" }}>

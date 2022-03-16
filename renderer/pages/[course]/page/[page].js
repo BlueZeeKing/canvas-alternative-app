@@ -15,7 +15,13 @@ export default function App(props) {
   const router = useRouter();
   const [storage, set, reset] = useSessionStorage();
 
-  useEffect(() => set(props.data.title, `/${router.query.course}/page/${router.query.page}?title=${router.query.title}`, 3), []);
+  const [data, ready] = useAPI(
+    `/courses/${router.query.course}/pages${router.query.page}`,
+    [],
+    (data) => set(data.title, `/${router.query.course}/page/${router.query.page}?title=${router.query.title}`, 3)
+  );
+
+  useEffect(() => set("Page", `/${router.query.course}/page/${router.query.page}?title=${router.query.title}`, 3), []);
   // TODO: make menu item group actually surround the items
   return (
     <>
@@ -26,32 +32,37 @@ export default function App(props) {
         title={router.query.title}
         course={router.query.course}
         page
-        rate_limit={props.limit}
-        tabs={props.tabs}
       >
         <div style={{ padding: "10px" }}>
-          <Title>{props.data.title}</Title>
-          <Text style={{ color: "gray" }}>
-            {new Date(Date.parse(props.data.created_at)).toLocaleString(
-              "en-US",
-              {
-                weekday: "short",
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-                hour: "numeric",
-                minute: "numeric",
-              }
-            )}
-          </Text>
+          {ready ? (
+            <>
+              <Title>{data.title}</Title>
+              <Text style={{ color: "gray" }}>
+                {new Date(Date.parse(data.created_at)).toLocaleString("en-US", {
+                  weekday: "short",
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                  hour: "numeric",
+                  minute: "numeric",
+                })}
+              </Text>
+            </>
+          ) : (
+            <Skeleton paragraph={false} />
+          )}
           <Divider />
-          <div
-            dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(props.data.body, {
-                USE_PROFILES: { html: true },
-              }),
-            }}
-          ></div>
+          {ready ? (
+            <div
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(data.body, {
+                  USE_PROFILES: { html: true },
+                }),
+              }}
+            ></div>
+          ) : (
+            <Skeleton active paragraph={false} />
+          )}
         </div>
       </Main>
     </>

@@ -14,7 +14,7 @@ export default function Home(props) {
     ["enrollment_state", "active"],
     ["state", "available"],
     ["include", "favorites"],
-  ]);
+  ], () => ( null ));
 
   const [storage, set, reset] = useSessionStorage();
 

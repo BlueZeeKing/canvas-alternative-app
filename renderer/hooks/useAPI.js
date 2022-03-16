@@ -3,7 +3,7 @@ import { notification } from "antd";
 import electron from "electron";
 const ipcRenderer = electron.ipcRenderer || false;
 
-export default function useAPI(url, query, active = true) {
+export default function useAPI(url, query, callBack, active = true) {
   const [data, setData] = useState({ data: {}, ready: false });
 
   useEffect(() => {
@@ -16,6 +16,7 @@ export default function useAPI(url, query, active = true) {
       );
 
       setData({ data: JSON.parse(data), ready: true });
+      callBack(JSON.parse(data));
     }
   });
 

@@ -11,7 +11,11 @@ import useAPI from "../../hooks/useAPI";
 export default function App(props) {
   const router = useRouter();
   const [storage, set, reset] = useSessionStorage();
-  const [data, ready] = useAPI(`/courses/${router.query.course}/front_page`, []);
+  const [data, ready] = useAPI(
+    `/courses/${router.query.course}/front_page`,
+    [],
+    () => null
+  );
 
   useEffect(() => set("Home Page", `/${router.query.course}/wiki?title=${router.query.title}`, 2), []);
 

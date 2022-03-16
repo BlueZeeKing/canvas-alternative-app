@@ -4,7 +4,8 @@ import {
   Divider,
   Avatar,
   Comment,
-  Tooltip
+  Tooltip,
+  Skeleton
 } from "antd";
 import DOMPurify from "isomorphic-dompurify";
 import { useEffect, useState } from "react";
@@ -19,14 +20,28 @@ import Main from "../../../components/Main";
 import Header from "../../../components/Header";
 import Center from "../../../components/Center";
 import useSessionStorage from "../../../hooks/useSessionStorage";
+import useAPI from "../../../hooks/useAPI";
 
-export default function App(props) {
+export default function App() {
   const router = useRouter();
   const [storage, set, reset] = useSessionStorage();
-  const [like, setLike] = useState(props.entries.entry_ratings);
+  const [like, setLike] = useState({});
 
-  const participants = props.entries.participants.reduce((last, item) => ({ ...last, [item.id]: item}), {})
-  const likes = props.entries.view.map((item) => (item.rating_sum - (props.entries.entry_ratings[item.id] == 1 ? 1 : 0)));
+  const [data, ready] = useAPI(
+    `/courses/${router.query.course}/discussion_topics/${router.query.discussion}`,
+    [],
+    (data) => set(data.title, `/${router.query.course}/discussion/${router.query.discussion}?title=${router.query.title}`, 3)
+  );
+  const [entries, entriesReady] = useAPI(
+    `/courses/${router.query.course}/discussion_topics/${router.query.discussion}/view`,
+    [],
+    (entries) => setLike(entries.entry_ratings)
+  );
+
+  if (entriesReady) {
+    const participants = entries.participants.reduce((last, item) => ({ ...last, [item.id]: item}), {})
+    const likes = entries.view.map((item) => (item.rating_sum - (entries.entry_ratings[item.id] == 1 ? 1 : 0)));
+  }
 
   function setLikes(item, index) {
     let copy = JSON.parse(JSON.stringify(like));
@@ -50,7 +65,7 @@ export default function App(props) {
     setLike(copy);
   }
 
-  useEffect(() => set(props.data.title, `/${router.query.course}/discussion/${router.query.discussion}?title=${router.query.title}`, 3), []);
+  useEffect(() => set("Discussion", `/${router.query.course}/discussion/${router.query.discussion}?title=${router.query.title}`, 3), []);
   
   // TODO: make menu item group actually surround the items
   return (
@@ -62,24 +77,23 @@ export default function App(props) {
         title={router.query.title}
         course={router.query.course}
         page
-        rate_limit={props.limit}
-        tabs={props.tabs}
       >
         <div style={{ padding: "10px" }}>
+          {ready ? <>
           <div style={{ display: "flex", verticalAlign: "middle" }}>
-            <Title style={{ margin: 0 }}>{props.data.title}</Title>
+            <Title style={{ margin: 0 }}>{data.title}</Title>
             <div style={{ flexGrow: 1 }}></div>
             <Center height="46.73px">
               <Text style={{ marginRight: "10px" }}>
-                {props.data.author.display_name}
+                {data.author.display_name}
               </Text>
             </Center>
             <Center height="46.73px">
-              <Avatar src={props.data.author.avatar_image_url} />
+              <Avatar src={data.author.avatar_image_url} />
             </Center>
           </div>
           <Text style={{ color: "gray" }}>
-            {new Date(Date.parse(props.data.posted_at)).toLocaleString(
+            {new Date(Date.parse(data.posted_at)).toLocaleString(
               "en-US",
               {
                 weekday: "short",
@@ -90,17 +104,18 @@ export default function App(props) {
                 minute: "numeric",
               }
             )}
-          </Text>
+          </Text> </> : <Skeleton active paragraph={false} />}
           <Divider />
+          {ready ?
           <div
             dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(props.data.message, {
+              __html: DOMPurify.sanitize(data.message, {
                 USE_PROFILES: { html: true },
               }),
             }}
-          ></div>
+          ></div> : <Skeleton active title={false} /> }
           <Divider />
-          {props.entries.view.map((item, index) => (
+          {entriesReady ? entries.view.map((item, index) => (
             <Comment
               key={item.id}
               author={
@@ -146,7 +161,7 @@ export default function App(props) {
                 </Text>
               }
               actions={
-                props.data.allow_rating
+                data.allow_rating
                   ? [
                       <Tooltip key="comment-like" title="Like">
                         <span onClick={() => setLikes(item, index)}>
@@ -165,7 +180,7 @@ export default function App(props) {
                   : ""
               }
             />
-          ))}
+          )) : <Skeleton avatar active />}
         </div>
       </Main>
     </>

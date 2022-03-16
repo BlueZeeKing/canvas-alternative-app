@@ -15,10 +15,14 @@ import useAPI from "../../hooks/useAPI";
 export default function App(props) {
   const router = useRouter();
   const [storage, set, reset] = useSessionStorage();
-  const [data, ready] = useAPI(`/courses/${router.query.course}/modules`, [
-    ["per_page", 50],
-    ["include", "items"]
-  ]);
+  const [data, ready] = useAPI(
+    `/courses/${router.query.course}/modules`,
+    [
+      ["per_page", 50],
+      ["include", "items"],
+    ],
+    () => null
+  );
 
   useEffect(() => set("Modules", `/${router.query.course}/modules?title=${router.query.title}`, 2), []);
 
